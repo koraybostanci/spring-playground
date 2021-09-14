@@ -32,7 +32,7 @@ management:
 
 rest-client-config:
   http-bin:
-    base-url: ${SERVICE_ENDPOINT_HTTP_BIN_SERVICE_BASE_URL:http://localhost:8001/}
+    base-url: "http://localhost:8001/"
     paths:
       get: "/get"
       slide-show: "/json"
