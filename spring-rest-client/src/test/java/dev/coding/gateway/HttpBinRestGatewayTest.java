@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.ResponseEntity.badRequest;
+import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -61,7 +62,7 @@ public class HttpBinRestGatewayTest {
                 ok("anyBody"),
                 notFound().build(),
                 badRequest().body("badRequest"),
-                ResponseEntity.internalServerError().build());
+                internalServerError().build());
     }
 
     private RestClientConfiguration.Properties buildHttpBinRestClientProperties () {
