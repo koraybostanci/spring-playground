@@ -30,7 +30,7 @@ management:
           - health
           - prometheus
 
-rest-clients:
+rest-client-config:
   http-bin:
     base-url: ${SERVICE_ENDPOINT_HTTP_BIN_SERVICE_BASE_URL:http://localhost:8001/}
     paths:

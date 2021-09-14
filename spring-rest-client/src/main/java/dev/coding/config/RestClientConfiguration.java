@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Getter
 @Validated
-@ConfigurationProperties("rest-clients")
+@ConfigurationProperties("rest-client-config")
 public class RestClientConfiguration {
 
     @Valid
