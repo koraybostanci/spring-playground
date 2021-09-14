@@ -29,3 +29,10 @@ management:
           - info
           - health
           - prometheus
+
+rest-client-config:
+  http-bin:
+    base-url: "http://localhost:8001/"
+    paths:
+      get: "/get"
+      slide-show: "/json"
