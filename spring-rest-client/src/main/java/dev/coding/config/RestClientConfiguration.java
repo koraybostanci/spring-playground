@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
 
@@ -12,6 +13,9 @@ import java.util.Map;
 @Validated
 @ConfigurationProperties("rest-clients")
 public class RestClientConfiguration {
+
+    @Valid
+    private final Properties httpBin = new Properties();
 
     @Getter
     @Setter
