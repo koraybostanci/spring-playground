@@ -24,6 +24,7 @@
 
         <!-- 3rd Party -->
         <commons-lang.version>2.6</commons-lang.version>
+        <wiremock-jre8.version>2.31.0</wiremock-jre8.version>
     </properties>
 
     <dependencies>
@@ -81,6 +82,21 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>${wiremock-jre8.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
