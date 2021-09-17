@@ -6,6 +6,10 @@
 version: 2
 updates:
   - package-ecosystem: "maven"
-    directory: "/"
+    directory: "/spring-rest-client"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "maven"
+    labels:
+      - "maven"
