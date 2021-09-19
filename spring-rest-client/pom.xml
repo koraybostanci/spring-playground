@@ -24,7 +24,8 @@
 
         <!-- 3rd Party -->
         <commons-lang.version>2.6</commons-lang.version>
-        <wiremock-jre8.version>2.31.0</wiremock-jre8.version>
+        <resilience4j.version>1.7.0</resilience4j.version>
+        <wiremock.version>2.31.0</wiremock.version>
 
         <!-- Plugins -->
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
@@ -70,6 +71,11 @@
             <version>${commons-lang.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot2</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
@@ -88,7 +94,7 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
-            <version>${wiremock-jre8.version}</version>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

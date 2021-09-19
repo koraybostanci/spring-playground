@@ -36,3 +36,33 @@ rest-client-config:
     paths:
       get: "/get"
       slide-show: "/json"
+
+resilience4j:
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 100ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+    instances:
+      rest-gateway:
+        baseConfig: default
+  circuitbreaker:
+    configs:
+      default:
+        minimumNumberOfCalls: 10
+        slidingWindowSize: 10         # if, over the last 10 requests
+        failureRateThreshold: 50      # 50% of them fail
+        waitDurationInOpenState: 1000 # then open the circuit and wait for 1 second.
+        permittedNumberOfCallsInHalfOpenState: 1
+        registerHealthIndicator: true
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+    instances:
+      rest-gateway:
+        baseConfig: default
