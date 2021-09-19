@@ -7,11 +7,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +47,7 @@ public class HttpBinRestGatewayTest {
     @ParameterizedTest
     @MethodSource(value = "getResponseEntityList")
     void get_returnsResponseEntity_whenRemoteServiceEndpointResponds (final ResponseEntity<String> expectedResponseEntity) {
-        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.GET), eq(null), eq(String.class)))
+        when(restTemplate.exchange(any(RequestEntity.class), eq(String.class)))
                 .thenReturn(expectedResponseEntity);
 
         final ResponseEntity<String> responseEntity = gateway.get();
