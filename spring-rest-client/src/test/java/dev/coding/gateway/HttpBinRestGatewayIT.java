@@ -2,6 +2,10 @@ package dev.coding.gateway;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,12 +31,21 @@ import static org.springframework.http.ResponseEntity.notFound;
 @SpringBootTest
 public class HttpBinRestGatewayIT {
 
-    private static final int RETRY_COUNT = 5;
+    private static final int RETRY_COUNT = 3;
 
     @Autowired
     private HttpBinRestGateway restGateway;
+    @Autowired
+    private CircuitBreakerRegistry circuitBreakerRegistry;
     @SpyBean
     private RestTemplate restTemplate;
+
+
+    @BeforeEach
+    public void beforeEach () {
+        final CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("rest-gateway");
+        circuitBreaker.reset();
+    }
 
     @Test
     void get_returnsResponseEntity_whenRemoteServiceReturnsHttp2xx () {
@@ -49,7 +62,7 @@ public class HttpBinRestGatewayIT {
     }
 
     @Test
-    void get_throwsHttpClientErrorException_whenRemoteServiceReturnsHttp4xx () {
+    void get_throwsHttpClientErrorException_onHttp4xx () {
         stubFor("/get", notFound().build());
 
         assertThrows(HttpClientErrorException.class, () -> restGateway.get());
@@ -58,7 +71,7 @@ public class HttpBinRestGatewayIT {
     }
 
     @Test
-    void get_retriesAndFinallyThrowsHttpClientErrorException_whenRemoteServiceReturnsHttp429 () {
+    void get_retriesAndThrowsHttpClientErrorException_onHttp429 () {
         stubFor("/get", ResponseEntity.status(TOO_MANY_REQUESTS).build());
 
         assertThrows(HttpClientErrorException.class, () -> restGateway.get());
@@ -67,12 +80,49 @@ public class HttpBinRestGatewayIT {
     }
 
     @Test
-    void get_retriesAndFinallyThrowsHttpServerErrorException_whenRemoteServiceReturnsHttp5xx () {
+    void get_retriesAndThrowsHttpServerErrorException_onHttp5xx () {
         stubFor("/get", internalServerError().build());
 
         assertThrows(HttpServerErrorException.class, () -> restGateway.get());
 
         verify(restTemplate, times(RETRY_COUNT)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void get_doesNotRetryAndDoesNotOpenCircuitBreakerAndThrowsHttpClientErrorException_onRepeatedHttp404 () {
+        stubFor("/get", notFound().build());
+
+        for (int i = 0; i < 10; i++) {
+            assertThrows(HttpClientErrorException.class, () -> restGateway.get());
+        }
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void get_opensCircuitBreakerAfterRetriesAndThrowsCallNotPermittedException_onRepeatedHttp429 () {
+        stubFor("/get", ResponseEntity.status(TOO_MANY_REQUESTS).build());
+
+        for (int i = 0; i < 3; i++) {
+            assertThrows(HttpClientErrorException.class, () -> restGateway.get());
+        }
+
+        assertThrows(CallNotPermittedException.class, () -> restGateway.get());
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void get_opensCircuitBreakerAfterRetriesAndThrowsCallNotPermittedException_onRepeatedHttp5xx () {
+        stubFor("/get", internalServerError().build());
+
+        for (int i = 0; i < 3; i++) {
+            assertThrows(HttpServerErrorException.class, () -> restGateway.get());
+        }
+
+        assertThrows(CallNotPermittedException.class, () -> restGateway.get());
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
     }
 
     private void stubFor (final String url, final ResponseEntity<String> responseEntity) {

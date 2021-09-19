@@ -1,6 +1,7 @@
 package dev.coding.gateway;
 
 import dev.coding.config.RestClientConfiguration;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -21,9 +22,11 @@ import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 @Component
 @Slf4j
 public class HttpBinRestGateway {
+
     private static final String REST_CALL_STARTING = "Rest call starting. URI: [{}]";
     private static final String REST_CALL_RESPONDED = "Rest call responded. URI: [{}], HttpStatus: [{}]";
     private static final String REST_CALL_FAILED = "Rest call failed. URI: [%s], HttpStatus: [%s], Reason: [%s]";
+    private static final String REST_GATEWAY_RESILIENCY_CONFIG_NAME = "rest-gateway";
     private static final String GET_PATH_KEY = "get";
 
     private final RestTemplate restTemplate;
@@ -35,7 +38,8 @@ public class HttpBinRestGateway {
         this.properties = restClientConfiguration.getHttpBin();
     }
 
-    @Retry(name = "default")
+    @Retry(name = REST_GATEWAY_RESILIENCY_CONFIG_NAME)
+    @CircuitBreaker(name = REST_GATEWAY_RESILIENCY_CONFIG_NAME)
     public ResponseEntity<String> get() {
         final URI uri = buildUriForPath(GET_PATH_KEY);
 
