@@ -30,7 +30,7 @@ public class RestTemplateConfiguration {
     private int socketTimeout;
 
     @Bean
-    RestTemplate defaultRestTemplate(final RestTemplateBuilder builder) {
+    public RestTemplate defaultRestTemplate(final RestTemplateBuilder builder) {
         builder.requestFactory(() -> clientHttpRequestFactory());
         return builder.build();
     }

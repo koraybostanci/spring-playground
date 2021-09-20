@@ -30,7 +30,7 @@ management:
           - health
           - prometheus
 
-rest-client-config:
+services:
   http-bin:
     base-url: "http://localhost:8001/"
     paths:
@@ -48,6 +48,8 @@ resilience4j:
         retryExceptions:
           - org.springframework.web.client.HttpServerErrorException
           - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
     instances:
       rest-gateway:
         baseConfig: default
@@ -63,6 +65,8 @@ resilience4j:
         recordExceptions:
           - org.springframework.web.client.HttpServerErrorException
           - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
     instances:
       rest-gateway:
         baseConfig: default
