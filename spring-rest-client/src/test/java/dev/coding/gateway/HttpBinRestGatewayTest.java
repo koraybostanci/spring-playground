@@ -1,6 +1,7 @@
 package dev.coding.gateway;
 
-import dev.coding.config.RestClientConfiguration;
+import dev.coding.config.ServiceConfiguration;
+import dev.coding.config.ServiceConfiguration.ServiceProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -34,14 +35,14 @@ public class HttpBinRestGatewayTest {
     @Mock
     private RestTemplate restTemplate;
     @Mock
-    private RestClientConfiguration restClientConfiguration;
+    private ServiceConfiguration serviceConfiguration;
 
     private HttpBinRestGateway gateway;
 
     @BeforeEach
     void beforeEach () {
-        when(restClientConfiguration.getHttpBin()).thenReturn(buildHttpBinRestClientProperties());
-        gateway = new HttpBinRestGateway(restTemplate, restClientConfiguration);
+        when(serviceConfiguration.getHttpBin()).thenReturn(buildHttpBinServiceProperties());
+        gateway = new HttpBinRestGateway(restTemplate, serviceConfiguration);
     }
 
     @ParameterizedTest
@@ -64,8 +65,8 @@ public class HttpBinRestGatewayTest {
                 internalServerError().build());
     }
 
-    private RestClientConfiguration.Properties buildHttpBinRestClientProperties () {
-        final RestClientConfiguration.Properties properties = new RestClientConfiguration.Properties();
+    private ServiceProperties buildHttpBinServiceProperties () {
+        final ServiceProperties properties = new ServiceProperties();
         properties.setBaseUrl(BASE_URL);
         properties.setPaths(PATHS);
         return properties;

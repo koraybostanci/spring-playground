@@ -3,6 +3,7 @@ package dev.coding.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -11,16 +12,17 @@ import java.util.Map;
 
 @Getter
 @Validated
-@ConfigurationProperties("rest-client-config")
-public class RestClientConfiguration {
+@ConfigurationProperties("services")
+public class ServiceConfiguration {
 
     @Valid
-    private final Properties httpBin = new Properties();
+    private final ServiceProperties httpBin = new ServiceProperties();
 
     @Getter
     @Setter
     @Validated
-    public static class Properties {
+    @Component
+    public static class ServiceProperties {
 
         @NotBlank
         private String baseUrl;
