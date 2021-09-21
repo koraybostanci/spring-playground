@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.notFound;
@@ -62,6 +64,8 @@ public class HttpBinRestGatewayTest {
                 ok("anyBody"),
                 notFound().build(),
                 badRequest().body("badRequest"),
+                ResponseEntity.status(REQUEST_TIMEOUT).build(),
+                ResponseEntity.status(TOO_MANY_REQUESTS).build(),
                 internalServerError().build());
     }
 
