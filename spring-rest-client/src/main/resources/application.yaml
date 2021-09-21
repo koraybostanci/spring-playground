@@ -46,12 +46,13 @@ resilience4j:
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
         retryExceptions:
-          - org.springframework.web.client.HttpServerErrorException
-          - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+          - dev.coding.common.exception.system.rest.RestCallShouldRetryException
           - java.util.concurrent.TimeoutException
           - java.io.IOException
+        ignoreExceptions:
+          - dev.coding.common.exception.BusinessException
     instances:
-      rest-gateway:
+      http-bin:
         baseConfig: default
   circuitbreaker:
     configs:
@@ -63,10 +64,11 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 1
         registerHealthIndicator: true
         recordExceptions:
-          - org.springframework.web.client.HttpServerErrorException
-          - org.springframework.web.client.HttpClientErrorException$TooManyRequests  # 429
+          - dev.coding.common.exception.system.rest.RestCallShouldRetryException
           - java.util.concurrent.TimeoutException
           - java.io.IOException
+        ignoreExceptions:
+          - dev.coding.common.exception.BusinessException
     instances:
-      rest-gateway:
+      http-bin:
         baseConfig: default
