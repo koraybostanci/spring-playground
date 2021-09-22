@@ -6,6 +6,18 @@ spring:
       version: "@project.version@"
   main:
     banner-mode: "off"
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+    serialization:
+      INDENT_OUTPUT: true
+      write_dates_as_timestamps: false
+    serialization-inclusion: non_null
+  cache:
+    cache-names: http-bin-cache
+    caffeine:
+      spec: expireAfterWrite=3s
 
 server:
   error.whitelabel.enabled: false
