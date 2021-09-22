@@ -42,9 +42,8 @@ public class HttpBinRestGatewayIT {
     @SpyBean
     private RestTemplate restTemplate;
 
-
     @BeforeEach
-    public void beforeEach () {
+    void beforeEach () {
         final CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("http-bin");
         circuitBreaker.reset();
     }
