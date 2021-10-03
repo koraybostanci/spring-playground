@@ -210,6 +210,87 @@ public class HttpBinRestGatewayIT {
         verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
     }
 
+    @Test
+    void put_returnsResponseEntity_onHttp2xx () throws JsonProcessingException {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        final String responseBody = "{\"id\":\"newId\"}";
+        final ResponseEntity<String> expectedResponseEntity = ResponseEntity.ok(responseBody);
+
+        stubForPut(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = restGateway.put(data);
+        final JsonNode responseBodyAsJson = toJsonNode(responseEntity.getBody());
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertTrue(responseBody.equalsIgnoreCase(responseBodyAsJson.toString()));
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void put_returnsResponseEntity_onHttp404 () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        final ResponseEntity<String> expectedResponseEntity = notFound().build();
+
+        stubForPut(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = restGateway.put(data);
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void put_throwsRestCallFailedException_onHttp4xx () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPut(badRequest().build());
+
+        assertThrows(RestCallFailedException.class, () -> restGateway.put(data));
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 408, 429, 500 })
+    void put_throwsRestCallShouldRetryExceptionAndRetries_onRetriableHttpStatus (final int statusCode) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPut(ResponseEntity.status(statusCode).body(data));
+
+        assertThrows(RestCallShouldRetryException.class, () -> restGateway.put(data));
+
+        verify(restTemplate, times(RETRY_COUNT)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void put_doesNotRetryAndDoesNotOpenCircuitBreakerAndReturnsResponseEntity_onRepeatedHttp404 () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPut(notFound().build());
+
+        for (int i = 0; i < 10; i++) {
+            final ResponseEntity<String> responseEntity = restGateway.put(data);
+            assertEquals(responseEntity.getStatusCode(), NOT_FOUND);
+        }
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 408, 429, 500 })
+    void put_opensCircuitBreakerAfterRetriesAndThrowsCallNotPermittedException_onRepeatedRetriableHttpStatus (final int statusCode) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPut(ResponseEntity.status(statusCode).build());
+
+        for (int i = 0; i < 3; i++) {
+            assertThrows(RestCallShouldRetryException.class, () -> restGateway.put(data));
+        }
+
+        assertThrows(CallNotPermittedException.class, () -> restGateway.put(data));
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
     private JsonNode toJsonNode (final String content) throws JsonProcessingException {
         return objectMapper.readValue(content, JsonNode.class);
     }
@@ -220,6 +301,10 @@ public class HttpBinRestGatewayIT {
 
     private void stubForPost (final ResponseEntity<String> responseEntity) {
         stubForPath(WireMock.post("/post"), responseEntity);
+    }
+
+    private void stubForPut (final ResponseEntity<String> responseEntity) {
+        stubForPath(WireMock.put("/put"), responseEntity);
     }
 
     private void stubForPath (final MappingBuilder mappingBuilder, final ResponseEntity<String> responseEntity) {

@@ -44,10 +44,11 @@ management:
 
 services:
   http-bin:
-    base-url: "http://localhost:8001/"
+    base-url: "http://localhost:8001"
     paths:
       get: "/get"
       post: "/post"
+      put: "/put"
 
 resilience4j:
   retry:

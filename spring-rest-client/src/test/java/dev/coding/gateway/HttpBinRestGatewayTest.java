@@ -32,7 +32,9 @@ public class HttpBinRestGatewayTest {
     private static final String BASE_URL = "https://httpbin.com";
     private static final Map<String, String> PATHS = Map.of(
             "get", "/get",
-            "post", "/post");
+            "post", "/post",
+            "put", "/put"
+    );
 
     @Mock
     private RestTemplate restTemplate;
@@ -67,6 +69,19 @@ public class HttpBinRestGatewayTest {
                 .thenReturn(expectedResponseEntity);
 
         final ResponseEntity<String> responseEntity = gateway.post(data);
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "responseEntityList")
+    void put_returnsResponseEntity_whenRemoteServiceEndpointResponds (final ResponseEntity<String> expectedResponseEntity) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        when(restTemplate.exchange(any(RequestEntity.class), eq(String.class)))
+                .thenReturn(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = gateway.put(data);
 
         assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
         assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());

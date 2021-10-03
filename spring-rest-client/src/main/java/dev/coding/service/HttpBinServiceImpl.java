@@ -24,4 +24,10 @@ public class HttpBinServiceImpl implements HttpBinService {
         final ResponseEntity<String> responseEntity = httpBinRestGateway.post(data);
         return responseEntity.getBody();
     }
+
+    @Override
+    public String put (final String data) {
+        final ResponseEntity<String> responseEntity = httpBinRestGateway.put(data);
+        return responseEntity.getBody();
+    }
 }
