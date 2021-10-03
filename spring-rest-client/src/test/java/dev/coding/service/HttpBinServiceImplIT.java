@@ -34,13 +34,13 @@ public class HttpBinServiceImplIT {
     @BeforeEach
     void beforeEach () {
         cacheManager.getCache(HTTP_BIN_CACHE_NAME).invalidate();
-
         WireMock.reset();
-        stubFor("/get", ResponseEntity.ok("anyBody"));
     }
 
     @Test
     void get_returnsResultFromCache_onConsecutiveCallsWithinCacheInterval() {
+        stubForGet(ResponseEntity.ok("anyBody"));
+
         for (int i = 0; i < 3; i++) {
             assertNotNull(service.get());
         }
@@ -50,6 +50,8 @@ public class HttpBinServiceImplIT {
 
     @Test
     void get_returnsResultByCallingGateway_onConsecutiveCallsWhenCacheExpires() throws InterruptedException {
+        stubForGet(ResponseEntity.ok("anyBody"));
+
         service.get();
         Thread.sleep(SECONDS.toMillis(5));
         final String result = service.get();
@@ -58,8 +60,8 @@ public class HttpBinServiceImplIT {
         verify(restGateway, times(2)).get();
     }
 
-    private void stubFor (final String url, final ResponseEntity<String> responseEntity) {
-        WireMock.stubFor(WireMock.get(url)
+    private void stubForGet (final ResponseEntity<String> responseEntity) {
+        WireMock.stubFor(WireMock.get("/get")
                 .willReturn(responseDefinition()
                         .withStatus(responseEntity.getStatusCodeValue())
                         .withBody(responseEntity.getBody())));

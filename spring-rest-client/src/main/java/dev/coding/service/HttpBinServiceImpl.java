@@ -1,12 +1,12 @@
 package dev.coding.service;
 
 import dev.coding.gateway.HttpBinRestGateway;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class HttpBinServiceImpl implements HttpBinService {
 
@@ -16,6 +16,12 @@ public class HttpBinServiceImpl implements HttpBinService {
     @Cacheable(HTTP_BIN_CACHE_NAME)
     public String get () {
         final ResponseEntity<String> responseEntity = httpBinRestGateway.get();
+        return responseEntity.getBody();
+    }
+
+    @Override
+    public String post (final String data) {
+        final ResponseEntity<String> responseEntity = httpBinRestGateway.post(data);
         return responseEntity.getBody();
     }
 }

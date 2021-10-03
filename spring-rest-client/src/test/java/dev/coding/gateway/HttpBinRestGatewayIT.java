@@ -1,5 +1,9 @@
 package dev.coding.gateway;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import dev.coding.common.exception.system.rest.RestCallFailedException;
@@ -21,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -36,6 +41,8 @@ public class HttpBinRestGatewayIT {
     private static final int RETRY_COUNT = 3;
 
     @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
     private HttpBinRestGateway restGateway;
     @Autowired
     private CircuitBreakerRegistry circuitBreakerRegistry;
@@ -46,13 +53,14 @@ public class HttpBinRestGatewayIT {
     void beforeEach () {
         final CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("http-bin");
         circuitBreaker.reset();
+        WireMock.reset();
     }
 
     @Test
     void get_returnsResponseEntity_onHttp2xx () {
         final ResponseEntity<String> expectedResponseEntity = ResponseEntity.ok("anyBody");
 
-        stubFor("/get", expectedResponseEntity);
+        stubForGet(expectedResponseEntity);
 
         final ResponseEntity<String> responseEntity = restGateway.get();
 
@@ -66,7 +74,7 @@ public class HttpBinRestGatewayIT {
     void get_returnsResponseEntity_onHttp404 () {
         final ResponseEntity<String> expectedResponseEntity = notFound().build();
 
-        stubFor("/get", expectedResponseEntity);
+        stubForGet(expectedResponseEntity);
 
         final ResponseEntity<String> responseEntity = restGateway.get();
 
@@ -78,7 +86,7 @@ public class HttpBinRestGatewayIT {
 
     @Test
     void get_throwsRestCallFailedException_onHttp4xx () {
-        stubFor("/get", badRequest().build());
+        stubForGet(badRequest().build());
 
         assertThrows(RestCallFailedException.class, () -> restGateway.get());
 
@@ -88,7 +96,7 @@ public class HttpBinRestGatewayIT {
     @ParameterizedTest
     @ValueSource(ints = { 408, 429, 500 })
     void get_throwsRestCallShouldRetryExceptionAndRetries_onRetriableHttpStatus (final int statusCode) {
-        stubFor("/get", ResponseEntity.status(statusCode).build());
+        stubForGet(ResponseEntity.status(statusCode).build());
 
         assertThrows(RestCallShouldRetryException.class, () -> restGateway.get());
 
@@ -97,7 +105,7 @@ public class HttpBinRestGatewayIT {
 
     @Test
     void get_doesNotRetryAndDoesNotOpenCircuitBreakerAndReturnsResponseEntity_onRepeatedHttp404 () {
-        stubFor("/get", notFound().build());
+        stubForGet(notFound().build());
 
         for (int i = 0; i < 10; i++) {
             final ResponseEntity<String> responseEntity = restGateway.get();
@@ -110,7 +118,7 @@ public class HttpBinRestGatewayIT {
     @ParameterizedTest
     @ValueSource(ints = { 408, 429, 500 })
     void get_opensCircuitBreakerAfterRetriesAndThrowsCallNotPermittedException_onRepeatedRetriableHttpStatus (final int statusCode) {
-        stubFor("/get", ResponseEntity.status(statusCode).build());
+        stubForGet(ResponseEntity.status(statusCode).build());
 
         for (int i = 0; i < 3; i++) {
             assertThrows(RestCallShouldRetryException.class, () -> restGateway.get());
@@ -121,8 +129,101 @@ public class HttpBinRestGatewayIT {
         verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
     }
 
-    private void stubFor (final String url, final ResponseEntity<String> responseEntity) {
-        WireMock.stubFor(WireMock.get(url)
+    @Test
+    void post_returnsResponseEntity_onHttp2xx () throws JsonProcessingException {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        final String responseBody = "{\"id\":\"newId\"}";
+        final ResponseEntity<String> expectedResponseEntity = ResponseEntity.ok(responseBody);
+
+        stubForPost(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = restGateway.post(data);
+        final JsonNode responseBodyAsJson = toJsonNode(responseEntity.getBody());
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertTrue(responseBody.equalsIgnoreCase(responseBodyAsJson.toString()));
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void post_returnsResponseEntity_onHttp404 () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        final ResponseEntity<String> expectedResponseEntity = notFound().build();
+
+        stubForPost(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = restGateway.post(data);
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void post_throwsRestCallFailedException_onHttp4xx () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPost(badRequest().build());
+
+        assertThrows(RestCallFailedException.class, () -> restGateway.post(data));
+
+        verify(restTemplate).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 408, 429, 500 })
+    void post_throwsRestCallShouldRetryExceptionAndRetries_onRetriableHttpStatus (final int statusCode) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPost(ResponseEntity.status(statusCode).body(data));
+
+        assertThrows(RestCallShouldRetryException.class, () -> restGateway.post(data));
+
+        verify(restTemplate, times(RETRY_COUNT)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @Test
+    void post_doesNotRetryAndDoesNotOpenCircuitBreakerAndReturnsResponseEntity_onRepeatedHttp404 () {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPost(notFound().build());
+
+        for (int i = 0; i < 10; i++) {
+            final ResponseEntity<String> responseEntity = restGateway.post(data);
+            assertEquals(responseEntity.getStatusCode(), NOT_FOUND);
+        }
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 408, 429, 500 })
+    void post_opensCircuitBreakerAfterRetriesAndThrowsCallNotPermittedException_onRepeatedRetriableHttpStatus (final int statusCode) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        stubForPost(ResponseEntity.status(statusCode).build());
+
+        for (int i = 0; i < 3; i++) {
+            assertThrows(RestCallShouldRetryException.class, () -> restGateway.post(data));
+        }
+
+        assertThrows(CallNotPermittedException.class, () -> restGateway.post(data));
+
+        verify(restTemplate, times(10)).exchange(any(RequestEntity.class), eq(String.class));
+    }
+
+    private JsonNode toJsonNode (final String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, JsonNode.class);
+    }
+
+    private void stubForGet (final ResponseEntity<String> responseEntity) {
+        stubForPath(WireMock.get("/get"), responseEntity);
+    }
+
+    private void stubForPost (final ResponseEntity<String> responseEntity) {
+        stubForPath(WireMock.post("/post"), responseEntity);
+    }
+
+    private void stubForPath (final MappingBuilder mappingBuilder, final ResponseEntity<String> responseEntity) {
+        WireMock.stubFor(mappingBuilder
                 .willReturn(responseDefinition()
                         .withStatus(responseEntity.getStatusCodeValue())
                         .withBody(responseEntity.getBody())));
