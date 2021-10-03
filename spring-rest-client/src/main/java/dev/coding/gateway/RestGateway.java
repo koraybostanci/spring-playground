@@ -19,6 +19,7 @@ import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
@@ -45,6 +46,11 @@ public class RestGateway {
 
     protected <T> ResponseEntity<T> post(final URI uri, final Object body, final Class<T> type) {
         final RequestEntity requestEntity = new RequestEntity(body, buildHttpHeaders(), POST, uri);
+        return doHttpCall(requestEntity, type);
+    }
+
+    protected <T> ResponseEntity<T> put(final URI uri, final Object body, final Class<T> type) {
+        final RequestEntity requestEntity = new RequestEntity(body, buildHttpHeaders(), PUT, uri);
         return doHttpCall(requestEntity, type);
     }
 
