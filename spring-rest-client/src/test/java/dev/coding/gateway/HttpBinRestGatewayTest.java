@@ -32,7 +32,7 @@ public class HttpBinRestGatewayTest {
     private static final String BASE_URL = "https://httpbin.com";
     private static final Map<String, String> PATHS = Map.of(
             "get", "/get",
-            "slide-show", "/json");
+            "post", "/post");
 
     @Mock
     private RestTemplate restTemplate;
@@ -48,7 +48,7 @@ public class HttpBinRestGatewayTest {
     }
 
     @ParameterizedTest
-    @MethodSource(value = "getResponseEntityList")
+    @MethodSource(value = "responseEntityList")
     void get_returnsResponseEntity_whenRemoteServiceEndpointResponds (final ResponseEntity<String> expectedResponseEntity) {
         when(restTemplate.exchange(any(RequestEntity.class), eq(String.class)))
                 .thenReturn(expectedResponseEntity);
@@ -59,7 +59,20 @@ public class HttpBinRestGatewayTest {
         assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());
     }
 
-    private static List<ResponseEntity<String>> getResponseEntityList() {
+    @ParameterizedTest
+    @MethodSource(value = "responseEntityList")
+    void post_returnsResponseEntity_whenRemoteServiceEndpointResponds (final ResponseEntity<String> expectedResponseEntity) {
+        final String data = "{\"field1\":\"anyValue1\"}";
+        when(restTemplate.exchange(any(RequestEntity.class), eq(String.class)))
+                .thenReturn(expectedResponseEntity);
+
+        final ResponseEntity<String> responseEntity = gateway.post(data);
+
+        assertEquals(responseEntity.getStatusCode(), expectedResponseEntity.getStatusCode());
+        assertEquals(responseEntity.getBody(), expectedResponseEntity.getBody());
+    }
+
+    private static List<ResponseEntity<String>> responseEntityList() {
         return List.of(
                 ok("anyBody"),
                 notFound().build(),

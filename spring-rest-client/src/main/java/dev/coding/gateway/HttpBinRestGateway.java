@@ -12,8 +12,9 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class HttpBinRestGateway extends RestGateway {
 
-    private static final String RESILIENCY_CONFIG_NAME = "http-bin";
     private static final String GET_PATH_KEY = "get";
+    private static final String POST_PATH_KEY = "post";
+    private static final String RESILIENCY_CONFIG_NAME = "http-bin";
 
     HttpBinRestGateway (final RestTemplate restTemplate,
                         final ServiceConfiguration serviceConfiguration) {
@@ -24,5 +25,11 @@ public class HttpBinRestGateway extends RestGateway {
     @CircuitBreaker(name = RESILIENCY_CONFIG_NAME)
     public ResponseEntity<String> get() {
         return get(buildUriForPath(GET_PATH_KEY), String.class);
+    }
+
+    @Retry(name = RESILIENCY_CONFIG_NAME)
+    @CircuitBreaker(name = RESILIENCY_CONFIG_NAME)
+    public ResponseEntity<String> post(final Object data) {
+        return post(buildUriForPath(POST_PATH_KEY), data, String.class);
     }
 }
