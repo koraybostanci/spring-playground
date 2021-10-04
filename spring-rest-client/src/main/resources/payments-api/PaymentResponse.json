@@ -1,0 +1,64 @@
+{
+  "payment": {
+    "id": "jBChG2gKZ3SsQQoHoAm8U491QDbZY",
+    "created_at": "2021-10-03T18:27:25.257Z",
+    "updated_at": "2021-10-03T18:27:25.458Z",
+    "amount_money": {
+      "amount": 100,
+      "currency": "USD"
+    },
+    "status": "COMPLETED",
+    "delay_duration": "PT168H",
+    "source_type": "CARD",
+    "card_details": {
+      "status": "CAPTURED",
+      "card": {
+        "card_brand": "VISA",
+        "last_4": "5858",
+        "exp_month": 10,
+        "exp_year": 2023,
+        "fingerprint": "sq-1-is1Fmt4e8bouX5e0mZ0IsrFldkW39j55gGMCWsOCM73daCQOe8qKT3sxdwqvcR7Hfw",
+        "card_type": "CREDIT",
+        "prepaid_type": "NOT_PREPAID",
+        "bin": "453275"
+      },
+      "entry_method": "KEYED",
+      "cvv_status": "CVV_ACCEPTED",
+      "avs_status": "AVS_ACCEPTED",
+      "statement_description": "SQ *DEFAULT TEST ACCOUNT",
+      "card_payment_timeline": {
+        "authorized_at": "2021-10-03T18:27:25.366Z",
+        "captured_at": "2021-10-03T18:27:25.458Z"
+      }
+    },
+    "location_id": "LNBQE0606Y4WS",
+    "order_id": "5s5hMFrbigkt9c3UG0WUxhawoh4F",
+    "risk_evaluation": {
+      "created_at": "2021-10-03T18:27:25.367Z",
+      "risk_level": "NORMAL"
+    },
+    "processing_fee": [
+      {
+        "effective_at": "2021-10-03T20:27:26.000Z",
+        "type": "INITIAL",
+        "amount_money": {
+          "amount": 33,
+          "currency": "USD"
+        }
+      }
+    ],
+    "total_money": {
+      "amount": 100,
+      "currency": "USD"
+    },
+    "approved_money": {
+      "amount": 100,
+      "currency": "USD"
+    },
+    "receipt_number": "jBCh",
+    "receipt_url": "https://squareupsandbox.com/receipt/preview/jBChG2gKZ3SsQQoHoAm8U491QDbZY",
+    "delay_action": "CANCEL",
+    "delayed_until": "2021-10-10T18:27:25.257Z",
+    "version_token": "2bG6oRdxzQCHa5WwSZ9ACsOB3U8YTpyPM6bMonakg9M6o"
+  }
+}

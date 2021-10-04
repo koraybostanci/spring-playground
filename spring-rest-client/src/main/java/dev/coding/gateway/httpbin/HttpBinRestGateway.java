@@ -1,15 +1,23 @@
-package dev.coding.gateway;
+package dev.coding.gateway.httpbin;
 
 import dev.coding.config.ServiceConfiguration;
+import dev.coding.config.ServiceConfiguration.ServiceProperties;
+import dev.coding.gateway.RestGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-@Component
+import java.net.URI;
+
+import static dev.coding.config.RestTemplateConfiguration.REST_TEMPLATE_FOR_STRING_DATA;
+import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
+
 @Slf4j
+@Component
 public class HttpBinRestGateway extends RestGateway {
 
     private static final String GET_PATH_KEY = "get";
@@ -17,9 +25,12 @@ public class HttpBinRestGateway extends RestGateway {
     private static final String PUT_PATH_KEY = "put";
     private static final String RESILIENCY_CONFIG_NAME = "http-bin";
 
-    HttpBinRestGateway (final RestTemplate restTemplate,
+    private final ServiceProperties serviceProperties;
+
+    HttpBinRestGateway (@Qualifier(REST_TEMPLATE_FOR_STRING_DATA) final RestTemplate restTemplate,
                         final ServiceConfiguration serviceConfiguration) {
-        super(restTemplate, serviceConfiguration.getHttpBin());
+        super(restTemplate);
+        serviceProperties = serviceConfiguration.getHttpBin();
     }
 
     @Retry(name = RESILIENCY_CONFIG_NAME)
@@ -38,5 +49,11 @@ public class HttpBinRestGateway extends RestGateway {
     @CircuitBreaker(name = RESILIENCY_CONFIG_NAME)
     public ResponseEntity<String> put(final Object data) {
         return put(buildUriForPath(PUT_PATH_KEY), data, String.class);
+    }
+
+    private URI buildUriForPath(final String pathKey) {
+        return fromUriString(serviceProperties.getBaseUrl())
+                .path(serviceProperties.getPath(pathKey))
+                .build().toUri();
     }
 }

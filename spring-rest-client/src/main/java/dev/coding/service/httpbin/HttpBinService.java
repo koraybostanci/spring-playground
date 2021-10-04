@@ -1,4 +1,4 @@
-package dev.coding.service;
+package dev.coding.service.httpbin;
 
 public interface HttpBinService {
     String get();

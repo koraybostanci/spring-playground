@@ -1,6 +1,6 @@
-package dev.coding.service;
+package dev.coding.service.httpbin;
 
-import dev.coding.gateway.HttpBinRestGateway;
+import dev.coding.gateway.httpbin.HttpBinRestGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;

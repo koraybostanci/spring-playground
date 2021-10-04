@@ -1,7 +1,8 @@
-package dev.coding.gateway;
+package dev.coding.gateway.httpbin;
 
 import dev.coding.config.ServiceConfiguration;
 import dev.coding.config.ServiceConfiguration.ServiceProperties;
+import dev.coding.gateway.httpbin.HttpBinRestGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

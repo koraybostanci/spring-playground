@@ -49,6 +49,12 @@ services:
       get: "/get"
       post: "/post"
       put: "/put"
+  payments:
+    base-url: "http://localhost:8001/payments"
+    version: "version"
+    access-token: "accessToken"
+    paths:
+      get-payment: "/{paymentId}"
 
 resilience4j:
   retry:
@@ -85,3 +91,16 @@ resilience4j:
     instances:
       http-bin:
         baseConfig: default
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+services:
+  payments:
+    base-url: "https://connect.squareupsandbox.com/v2/payments"
+    version: "2021-09-15"
+    access-token: "EAAAEIN98aOACYw3_UVZhw-g6FqdoCTLCDGRxmqj_9M0pnOLHDym-vqK8OI12HHF"
