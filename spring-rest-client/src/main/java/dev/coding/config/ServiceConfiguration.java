@@ -17,6 +17,8 @@ public class ServiceConfiguration {
 
     @Valid
     private final ServiceProperties httpBin = new ServiceProperties();
+    @Valid
+    private final ServiceProperties payments = new ServiceProperties();
 
     @Getter
     @Setter
@@ -26,6 +28,8 @@ public class ServiceConfiguration {
 
         @NotBlank
         private String baseUrl;
+        private String version;
+        private String accessToken;
         private Map<String, String> paths;
 
         public String getPath(final String key) {

@@ -1,8 +1,8 @@
-package dev.coding.service;
+package dev.coding.service.httpbin;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import dev.coding.gateway.HttpBinRestGateway;
+import dev.coding.gateway.httpbin.HttpBinRestGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

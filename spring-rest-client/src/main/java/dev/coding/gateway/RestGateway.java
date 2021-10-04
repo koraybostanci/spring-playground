@@ -2,7 +2,6 @@ package dev.coding.gateway;
 
 import dev.coding.common.exception.system.rest.RestCallFailedException;
 import dev.coding.common.exception.system.rest.RestCallShouldRetryException;
-import dev.coding.config.ServiceConfiguration.ServiceProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -13,9 +12,11 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static java.util.Collections.EMPTY_MAP;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -25,7 +26,6 @@ import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
 import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.notFound;
-import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,27 +37,24 @@ public class RestGateway {
     private static final Set<HttpStatus> HTTP_STATUS_CODES_TO_RETRY = Set.of(REQUEST_TIMEOUT, TOO_MANY_REQUESTS);
 
     private final RestTemplate restTemplate;
-    private final ServiceProperties serviceProperties;
 
     protected <T> ResponseEntity<T> get(final URI uri, final Class<T> type) {
-        final RequestEntity requestEntity = new RequestEntity(buildHttpHeaders(), GET, uri);
+        return get(uri, EMPTY_MAP, type);
+    }
+
+    protected <T> ResponseEntity<T> get(final URI uri, final Map<String, String> customHeaders, final Class<T> type) {
+        final RequestEntity requestEntity = new RequestEntity(httpHeadersOf(customHeaders), GET, uri);
         return doHttpCall(requestEntity, type);
     }
 
     protected <T> ResponseEntity<T> post(final URI uri, final Object body, final Class<T> type) {
-        final RequestEntity requestEntity = new RequestEntity(body, buildHttpHeaders(), POST, uri);
+        final RequestEntity requestEntity = new RequestEntity(body, httpHeadersOf(EMPTY_MAP), POST, uri);
         return doHttpCall(requestEntity, type);
     }
 
     protected <T> ResponseEntity<T> put(final URI uri, final Object body, final Class<T> type) {
-        final RequestEntity requestEntity = new RequestEntity(body, buildHttpHeaders(), PUT, uri);
+        final RequestEntity requestEntity = new RequestEntity(body, httpHeadersOf(EMPTY_MAP), PUT, uri);
         return doHttpCall(requestEntity, type);
-    }
-
-    URI buildUriForPath (final String pathKey) {
-        return fromUriString(serviceProperties.getBaseUrl())
-                .path(serviceProperties.getPath(pathKey))
-                .build().toUri();
     }
 
     private <T> ResponseEntity<T> doHttpCall (final RequestEntity requestEntity, final Class<T> type) {
@@ -86,9 +83,15 @@ public class RestGateway {
         throw new RestCallFailedException(ex);
     }
 
-    private HttpHeaders buildHttpHeaders () {
+    private HttpHeaders httpHeadersOf (final Map<String, String> customHeaders) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+
+        if (customHeaders != null && !customHeaders.isEmpty()) {
+            customHeaders.entrySet().stream()
+                    .forEach(entry -> headers.add(entry.getKey(), entry.getValue()));
+        }
+
         return headers;
     }
 }

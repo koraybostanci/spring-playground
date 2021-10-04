@@ -1,4 +1,4 @@
-package dev.coding.gateway;
+package dev.coding.gateway.httpbin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
