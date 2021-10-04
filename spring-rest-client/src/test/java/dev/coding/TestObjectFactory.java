@@ -1,5 +1,6 @@
 package dev.coding;
 
+import dev.coding.domain.PaymentEntity;
 import dev.coding.gateway.square.data.Card;
 import dev.coding.gateway.square.data.CardDetails;
 import dev.coding.gateway.square.data.Money;
@@ -7,6 +8,14 @@ import dev.coding.gateway.square.data.Payment;
 import dev.coding.gateway.square.data.PaymentResponse;
 
 public final class TestObjectFactory {
+
+    public static PaymentEntity paymentEntityOf (final PaymentResponse paymentResponse) {
+        final PaymentEntity paymentEntity = new PaymentEntity();
+        paymentEntity.setId(paymentResponse.getPayment().getId());
+        paymentEntity.setStatus(paymentResponse.getPayment().getStatus());
+        paymentEntity.setOrderId(paymentResponse.getPayment().getOrderId());
+        return paymentEntity;
+    }
 
     public static PaymentResponse anyPaymentResponse (final String paymentId) {
         final PaymentResponse response = new PaymentResponse();
