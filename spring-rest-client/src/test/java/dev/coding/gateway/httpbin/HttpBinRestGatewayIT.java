@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.RequestEntity;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.responseDefinition;
+import static dev.coding.config.RestTemplateConfiguration.REST_TEMPLATE_FOR_STRING_DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,14 +42,16 @@ public class HttpBinRestGatewayIT {
 
     private static final int RETRY_COUNT = 3;
 
+    @Qualifier(REST_TEMPLATE_FOR_STRING_DATA)
+    @SpyBean
+    private RestTemplate restTemplate;
+
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
     private HttpBinRestGateway restGateway;
     @Autowired
     private CircuitBreakerRegistry circuitBreakerRegistry;
-    @SpyBean
-    private RestTemplate restTemplate;
 
     @BeforeEach
     void beforeEach () {
@@ -58,7 +62,7 @@ public class HttpBinRestGatewayIT {
 
     @Test
     void get_returnsResponseEntity_onHttp2xx () {
-        final ResponseEntity<String> expectedResponseEntity = ResponseEntity.ok("anyBody");
+        final ResponseEntity<String> expectedResponseEntity = ResponseEntity.ok("anyJsonNode()");
 
         stubForGet(expectedResponseEntity);
 

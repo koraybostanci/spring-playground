@@ -6,16 +6,18 @@ import dev.coding.gateway.RestGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 
+import static dev.coding.config.RestTemplateConfiguration.REST_TEMPLATE_FOR_STRING_DATA;
 import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 
-@Component
 @Slf4j
+@Component
 public class HttpBinRestGateway extends RestGateway {
 
     private static final String GET_PATH_KEY = "get";
@@ -25,7 +27,8 @@ public class HttpBinRestGateway extends RestGateway {
 
     private final ServiceProperties serviceProperties;
 
-    HttpBinRestGateway (final RestTemplate restTemplate, final ServiceConfiguration serviceConfiguration) {
+    HttpBinRestGateway (@Qualifier(REST_TEMPLATE_FOR_STRING_DATA) final RestTemplate restTemplate,
+                        final ServiceConfiguration serviceConfiguration) {
         super(restTemplate);
         serviceProperties = serviceConfiguration.getHttpBin();
     }
