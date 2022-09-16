@@ -25,7 +25,7 @@
         <!-- 3rd Party -->
         <commons-lang.version>2.6</commons-lang.version>
         <resilience4j.version>1.7.1</resilience4j.version>
-        <wiremock.version>2.33.2</wiremock.version>
+        <wiremock.version>2.34.0</wiremock.version>
 
         <!-- Plugins -->
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
