@@ -24,7 +24,7 @@
 
         <!-- 3rd Party -->
         <commons-lang.version>2.6</commons-lang.version>
-        <resilience4j.version>2.0.0</resilience4j.version>
+        <resilience4j.version>2.0.1</resilience4j.version>
         <wiremock.version>2.35.0</wiremock.version>
 
         <!-- Plugins -->
