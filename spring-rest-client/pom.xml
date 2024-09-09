@@ -28,7 +28,7 @@
         <wiremock.version>2.35.2</wiremock.version>
 
         <!-- Plugins -->
-        <maven-failsafe-plugin.version>3.4.0</maven-failsafe-plugin.version>
+        <maven-failsafe-plugin.version>3.5.0</maven-failsafe-plugin.version>
     </properties>
 
     <dependencies>
